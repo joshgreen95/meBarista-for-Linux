@@ -1,7 +1,7 @@
 # meBarista-for-Linux
 This is a fork of the discontinued meBarista chrome app which has been made into an electron app and runs on linux. 
 
->As of writing meCoffee and meBarista have been taken offline, so this now seems to be the only way to control the meCoffee PID which isn't through an android device, as the IOS version also fails to work and the chrome app has been deprecated. This was pulled from an exposed GIT repo on the site and then modified to work with electron.
+>As of writing meCoffee and meBarista have been taken offline, so this now seems to be the only way to control the meCoffee PID which isn't through an android device, as the IOS version also fails to work and the chrome app has been deprecated. This was pulled from an exposed GIT repo on the site and then modified to work with as an Electron app with a local Bluetooth RFCOMM bridge.
 
 ### Instructions
 * Clone the repo
