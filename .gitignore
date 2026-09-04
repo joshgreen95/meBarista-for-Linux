@@ -1,2 +1,4 @@
 release/
 node_modules/
+.gitignore
+.git/
