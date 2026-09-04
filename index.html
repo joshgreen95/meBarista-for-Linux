@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>meBarista</title>
+    <link rel="shortcut icon" href="https://mecoffee.nl/wp-content/uploads/2015/07/logo-16.png">    
+    <link rel="apple-touch-icon" href="images/logo-57.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/logo-114.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/logo-72.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="images/logo-144.png">
+
+  	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+  	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css">
+   
+    <link rel="stylesheet" href="lib/bootstrap-switch.css">
+    <link rel="stylesheet" href="lib/bootstrap-slider.css">
+    <link rel="stylesheet" href="lib/bootstrap-timepicker.css">
+    <link rel="stylesheet" href="lib/bootstrap-select.css">
+    <link rel="stylesheet" href="lib/d3-gauge-simple.css">
+    
+   	<style>
+      svg {
+        font: 10px sans-serif;
+      }
+
+      #line_sp, #line_tmp2 { color: red; fill: none;}
+      #line_tmp, .line {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.5px;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .temperature { width: 10em; }
+      .temperature input { text-align: right; }
+
+      .tab-content { padding-top: 2em;}
+
+      .svg-container {
+        display: inline-block;
+        position: relative;
+        width: 100%;
+        padding-bottom: 70%;
+        vertical-align: middle;
+        overflow: hidden;
+      }
+
+      .svg-content {
+        display: inline-block;
+        position: relative;
+        height: 25vh;
+        width: 100%;
+        top: 0;
+        left: 0;
+        bottom: 0;
+      }
+
+      .slider-track-high { background: darkgrey; }
+      .slider-selection { background: darkgrey;  }
+      .slider-horizontal { top: 0.4em; }
+
+      .bootstrap-select { width: 25em !important;}
+
+      .help {
+        position: absolute; margin-right: 2em; margin-bottom: 16em;
+      }
+    </style>
+  </head>
+  <body>
+  	<div class="container">
+
+      <p>&nbsp;<p/>
+      <div style="padding-bottom: 7vh;">
+        
+        <div id="gauge_boiler" style="position: absolute; z-index: 100; top: 22vh; left: 3vw;"></div>
+        <div id="gauge_shottimer" style="display: none; position: absolute; z-index: 100; top: 22vh; left: 13vw;"></div>
+
+      <div class="well" style="height: 30vh;">
+        <div id="graph" class="svg-container"></div>
+
+      </div>
+      
+      </div>  
+  
+      <ul id="tabs" class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#connect" data-toggle="tab">Connect</a></li>
+        <li role="presentation"><a href="#temperature" data-toggle="tab">Temperature</a></li>
+        <li role="presentation"><a href="#pid" data-toggle="tab">PID</a></li>
+        <li role="presentation"><a href="#pressure" data-toggle="tab">Pressure</a></li>
+        <li role="presentation"><a href="#preinfusion" data-toggle="tab">Preinfusion</a></li>
+        <li role="presentation"><a href="#timer" data-toggle="tab">Timer</a></li>
+        <li role="presentation"><a href="#hardware" data-toggle="tab">Hardware</a></li>
+      </ul>
+
+      <div id="my-tab-content" class="tab-content">
+
+        <a href="https://mecoffee.nl" target="_blank" style="position: absolute; right: 5vw;">
+          <img src="images/logo-128.png" style="width: 10vw;" />
+        </a>
+
+        <div class="tab-pane" id="temperature">
+
+          <form class="form-horizontal" role="form">
+    
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Current</label>
+              <div class="col-sm-10">
+              	<div class="input-group temperature">
+                  <input id="mc_tmp" type="number" readonly class="form-control" placeholder="101.00" aria-describedby="basic-addon1">
+                  <span class="input-group-addon" id="basic-addon2">&deg;C</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Setpoint</label>
+              <div class="col-sm-10">
+              	<div class="input-group temperature">
+                  <input id="mc_tmpsp" type="number" min="90" max="115" step="0.5" 
+                    pattern="\d+(\.\d{2})?" class="form-control target" placeholder="101.00" 
+                    aria-describedby="basic-addon1" data-scale="100">
+                  <span id="mc_tmpsp_c" class="input-group-addon">&deg;C</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Steam</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input id="mc_tmpstm" type="number" min="115" max="135" step="0.5" 
+                    pattern="\d+(\.\d{2})?" class="form-control target" placeholder="125.00" 
+                    aria-describedby="basic-addon1" data-scale="100">
+                  <span id="mc_tmpstm_c" class="input-group-addon">&deg;C</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Continous mode</label>
+              <div class="col-sm-10">
+                <input id="mc_tmpcntns" type="checkbox" name="joop" class="form-control target" value="1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Pro Active</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input class="slider target" id="mc_tmppap" type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" >
+
+                  <!-- span id="mc_pap_lbl">3</span -->
+
+                  <!-- input id="mc_pap" type="text" class="form-control target" aria-describedby="basic-addon1" -->
+                  <!-- span class="input-group-addon" id="basic-addon2">%</span -->
+                </div>
+              </div>
+            </div>
+
+          </form>
+
+        </form>
+          <div class="help">
+                <a href="https://mecoffee.nl/mebarista/help/temperature/" target="_blank">Help</a>
+            </div>
+
+
+        </div>
+
+
+        <div class="tab-pane" id="pid">
+          <form class="form-horizontal" role="form">
+    
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Proportional</label>
+              <div class="col-sm-10">
+                <input id="mc_pd1p" type="text" class="form-control temperature target" placeholder="25" aria-describedby="basic-addon1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Integral</label>
+              <div class="col-sm-10">
+                <input id="mc_pd1i" type="text"  class="form-control temperature target" placeholder="3" aria-describedby="basic-addon1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Derative</label>
+              <div class="col-sm-10">
+                <input id="mc_pd1d" type="text"  class="form-control temperature target" placeholder="128" aria-describedby="basic-addon1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Interval</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input class="slider target" id="mc_pd1sz" type="text" data-slider-min="1000" data-slider-max="10000" data-slider-step="500" data-slider-value="0" >
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Winddown</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input class="slider target" id="mc_pd1imx" type="text" data-slider-min="1500" data-slider-max="5000" data-slider-step="100" data-slider-value="0" >
+                </div>
+              </div>
+            </div>
+ 
+          </form>
+
+           </form>
+          <div class="help">
+                <a href="https://mecoffee.nl/mebarista/help/temperature/pid/" target="_blank">Help</a>
+            </div>
+
+        </div>
+
+        <div class="tab-pane" id="pressure">  
+          <form class="form-horizontal" role="form"> 
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Start</label>
+              <div class="col-sm-10">
+              	 <div class="input-group temperature">
+
+                <input id="mc_pp1" type="text" class="form-control target" aria-describedby="basic-addon1">
+                 <span class="input-group-addon" id="basic-addon2">%</span>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">End</label>
+              <div class="col-sm-10">
+              	 <div class="input-group temperature">
+
+                <input id="mc_pp2" type="text" class="form-control target" aria-describedby="basic-addon1">
+                 <span class="input-group-addon" id="basic-addon2">%</span>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Period</label>
+              <div class="col-sm-10">
+              	 <div class="input-group temperature">
+
+                <input id="mc_ppt" type="text" class="form-control target" aria-describedby="basic-addon1">
+                 <span class="input-group-addon" id="basic-addon2">s</span>
+                </div>
+
+              </div>
+            </div>
+          
+          </form>  
+          <div class="help">
+                <a href="https://mecoffee.nl/mebarista/help/pressure/" target="_blank">Help</a>
+            </div>
+
+        </div>
+
+        <div class="tab-pane" id="preinfusion">
+          <form class="form-horizontal" role="form">
+    
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Preinfusion</label>
+              <div class="col-sm-10">
+                <input id="mc_pinbl" class="target" type="checkbox" class="form-control target" >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Pump time</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input class="slider target" id="mc_pistrt" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="0" >
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Close valve</label>
+              <div class="col-sm-10">
+                <input id="mc_pivlv" class="target" type="checkbox" class="form-control target" >
+              </div>
+            </div>
+
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Pause time</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+                  <input class="slider target" id="mc_piprd" type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="0" >
+                </div>
+              </div>
+            </div>
+
+          </form>
+
+           </form>
+          <div class="help">
+                <a href="https://mecoffee.nl/mebarista/help/preinfusion/" target="_blank">Help</a>
+            </div>
+
+        </div>
+
+        <div class="tab-pane" id="timer">
+
+          <form class="form-horizontal" role="form">            
+    
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Wakeup</label>
+              <div class="col-sm-10">
+                <input id="mc_tmrwnbl" class="target" type="checkbox" class="form-control target" >
+              </div>
+            </div>
+
+             <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">At</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+
+                  <input id="mc_tmron" type="text" class="form-control input-small timepicker target"  aria-describedby="basic-addon1">
+                  <span class="input-group-addon" id="basic-addon2"><i class="glyphicon glyphicon-time" aria-hidden="true"></i></span>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Shutdown</label>
+              <div class="col-sm-10">
+                <input id="mc_tmrsnbl" class="target" type="checkbox" class="form-control target" >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">At</label>
+              <div class="col-sm-10">
+                <div class="input-group temperature">
+
+                  <input id="mc_tmroff" type="text" class="form-control input-small timepicker target"  aria-describedby="basic-addon1">
+                  <span class="input-group-addon" id="basic-addon2"><i class="glyphicon glyphicon-time" aria-hidden="true"></i></span>
+
+                </div>
+              </div>   
+            </div>
+
+            
+
+          </form>
+          <div class="help">
+                <a href="https://mecoffee.nl/mebarista/help/timer/" target="_blank">Help</a>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="hardware">
+          <form class="form-horizontal" role="form">
+    
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Installed a timer</label>
+              <div class="col-sm-10">
+                <input id="mc_tmrpwr" class="target" type="checkbox" class="form-control target" >
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="tab-pane active" id="connect">
+          <form class="form-horizontal" role="form">
+            
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Show</label>
+              <div class="col-sm-10">
+  
+                <select id="device" class="selectpicker">
+                  <optgroup id="devices" label="Bluetooth devices">
+                    <option id="devices_msg" value="none">No paired Bluetooth devices found - pair your meCoffee board first</option>
+                  </optgroup>
+                  <optgroup label="Demos">
+                    <option value="share_56273d393cab0" selected>Silvia meCoffee vs Factory - warmup</option>
+                    <!-- option value="share_55fc39ec76b7b">Silvia meCoffee vs Factory - espresso shot</option>
+                    <option value="share_55fc667737cc9">Vibiemme Domobar meCoffee - warmup</option !-->
+                  </optgroup>
+                </select>
+
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp">Speed</label>
+              <div class="col-sm-10">
+                  <input class="slider" id="demo_speed" type="text" data-slider-min="1" data-slider-max="50" data-slider-step="1" data-slider-value="5" >
+              </div>
+            </div>
+
+            <p style="height: 2em;"></p>
+            
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="mc_tmp"></label>
+              <div class="col-sm-10">
+            
+                  <button id="start" class="btn btn-primary">
+                    <span id="start_icon" class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    &nbsp;&nbsp;
+                    <span id="start_label">Start</span>
+                  </button>
+                  <span id="connect_error" style="margin-left: 2em; color: #a94442;"></span>
+
+              </div>
+            </div>
+            
+          </form>
+
+        </div>
+
+    </div>
+
+	</div>
+
+
+    <script src="lib/jquery-1.11.2.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="lib/bootstrap-switch.js"></script>
+    <script src="lib/bootstrap-slider.min.js"></script>
+    <script src="lib/bootstrap-timepicker.js"></script>
+    <script src="lib/bootstrap-select.js"></script>
+    <script src="lib/d3.v3.min.js"></script>
+    <script src="lib/d3-gauge.js"></script>
+
+    <script src="graph.js"></script>
+    <script src="mecoffee.js"></script>
+    
+  </body>
+</html>

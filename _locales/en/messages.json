@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "meBarista",
+    "description": "The title of the application, displayed in the web store."
+  },
+  "appDesc": {
+    "message": "meBarista for the meCoffee espresso-machine controller. Cheaper, better and more versatile than an Auber PID. Really. Have a nice coffee!.", 
+    "description":"The description of the application, displayed in the web store."
+  }
+}
+

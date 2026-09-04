@@ -1,0 +1,30 @@
+{
+  "name": "mebarista",
+  "version": "0.3.0",
+  "description": "meBarista for the meCoffee espresso machine controller, running as a desktop Electron app with a local Bluetooth RFCOMM bridge.",
+  "author": "meBarista",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "nl.mecoffee.mebarista",
+    "productName": "meBarista",
+    "directories": {
+      "output": "release"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "images/logo-512.png",
+      "category": "Utility"
+    }
+  }
+}
